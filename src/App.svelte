@@ -1,24 +1,55 @@
 <script>
-	import Handpiano from "./components/handpiano.svelte";
+	import HandPiano from "./components/hand-piano.svelte";
+	import MobilePiano from "./components/mobile-piano.svelte";
+	import TopBar from "./components/UI/top-bar.svelte";
+	const mediaQuery = '@media (max-width: 640px)'
+	
+	let isMobile = window.matchMedia(mediaQuery).matches
+	window.onresize = () => {
+		isMobile = window.matchMedia(mediaQuery).matches 
+		console.log(isMobile)
+	}
+	
 </script>
 
 <main>
-	<h1>Hand Piano</h1>
-	<Handpiano />
+	
+	<div class="desktop">
+		
+		{#if !isMobile}
+			<TopBar />
+			<HandPiano />
+
+		{/if}
+	</div>
+	<div class="mobile">
+		<MobilePiano />
+	</div>
+
+
 </main>
 
 <style>
 	
-	h1 {
-		color: #ff3e00;
-		text-transform: uppercase;
-		font-size: 4em;
-		font-weight: 100;
+
+
+	.desktop {
+		display: block;
 	}
 
-	@media (min-width: 640px) {
-		main {
-			max-width: none;
+	.mobile {
+		display: none;
+	}
+
+	@media (max-width: 640px) {
+		.mobile {
+			display: block;
+			width: 100vw;
+			height: 100vh;
+		}
+
+		.desktop {
+			display: none;
 		}
 	}
 
