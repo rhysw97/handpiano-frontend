@@ -1,7 +1,8 @@
 <script>
-	import HandPiano from "./components/hand-piano.svelte";
-	import MobilePiano from "./components/mobile-piano.svelte";
-	import TopBar from "./components/UI/top-bar.svelte";
+	import HandPiano from "./components/piano/hand-piano.svelte";
+	import MobilePiano from "./components/piano/mobile-piano.svelte";
+	import TopBar from "./components/ui/top-bar.svelte";
+	
 	const mediaQuery = '@media (max-width: 640px)'
 	
 	let isMobile = window.matchMedia(mediaQuery).matches
@@ -14,8 +15,8 @@
 
 <main>
 	
+	
 	<div class="desktop">
-		
 		{#if !isMobile}
 			<TopBar />
 			<HandPiano />
