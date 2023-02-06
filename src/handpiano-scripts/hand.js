@@ -1,22 +1,25 @@
+
 export class Hand {
   constructor() {
     this.handpose;
-    this.predictions = [];
+    this.predictions = []; //stores predictions from handpose library
     this.fingers = {};
     //set to store fingers that are curled
     this.curledFingers = new Set()
     this.startMessage = "Hand Model Loading Please Wait"
   }
 
+  //function to set up everything we need for handpose to work
   setupHandpose(width, height, video) {
-    //creates a video for the 
    
-    video.size(width, height);
-    
-    this.handpose = ml5.handpose(video, {flipHorizontal: true}, () => {
-      this.startMessage = "Click To Start"
+      video.size(width, height);
+
+      this.handpose = ml5.handpose(video, {flipHorizontal: true}, () => { 
+      this.startMessage = "Click To Start" //changes tet in p5 sketch to click to start once handpose has loaded
       console.log('Model Ready')
     });
+
+    console.log(this.handpose)
 
     this.getPredictions()
     video.hide(); //hides the video element so it isn't visible
@@ -28,7 +31,7 @@ export class Hand {
       this.predictions = results;
     });
   }
-  //takes in 
+  //takes in a single pr
   addPointsToFingers(prediction) {
       
       this.fingers['thumb'] = [prediction.thumb[2], prediction.thumb[3]];

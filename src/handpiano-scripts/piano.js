@@ -1,3 +1,5 @@
+import * as Tone from 'tone'
+
 class Key {
   constructor(x, y, width, height, note, colour) {
     this.x = x
@@ -6,6 +8,7 @@ class Key {
     this.height = height
     this.note = note
     this.colour = colour
+    this.playing = false
     this.fingersOnNote = new Set();
     this.oscillator = new Tone.PolySynth().toDestination()
   }
@@ -43,6 +46,7 @@ export class Piano {
     this.notesToPlay = new Set()
     this.notesPlaying = new Set()
     this.notesToRelease = new Set()
+    this.createKeys()
   }
 
   createKeys() {
@@ -59,18 +63,21 @@ export class Piano {
   }
 
   playNotes() {
-    console.log(this.notesToPlay);
+   // console.log(this.notesToPlay);
     if(this.notesToPlay.size > 0) {
       this.keys.forEach(key => {
         if(this.notesToPlay.has(key.note)) {
           key.oscillator.triggerAttack(key.note)
         }
       })
-      this.notesPlaying = new Set(this.notesToPlay)
+      this.notesToPlay.forEach(note => {
+        this.notesPlaying.add(note)
+      })
       this.notesToPlay.clear()
     }
   }
 
+  //function that loops through notes to release 
   releaseNotes() {
     if(this.notesToRelease.size > 0) {
       this.keys.forEach(key => {
@@ -79,6 +86,7 @@ export class Piano {
           key.oscillator.triggerRelease(key.note)
         }
       })
+      
       this.notesToRelease.clear()
     }
   }
@@ -95,11 +103,14 @@ export class Piano {
     })
     this.playNotes()
   }
+  
 
   checkNotesReleased(curledFingers) {
+    //loops through each key of piano and checks if it is the notes playing set
     this.keys.forEach(key => {
       let stopNote = true;
       if(this.notesPlaying.has(key.note)) {
+        //if key is in notes playing set loops through
         curledFingers.forEach(curledFinger => {
           if(key.fingersOnNote.has(curledFinger)) {
             stopNote = false;
@@ -114,4 +125,7 @@ export class Piano {
     })
     this.releaseNotes()
   } 
+
+  
 } 
+

@@ -1,20 +1,27 @@
 <script>
-    import {Hand} from '../../handpiano-scripts/hand'
-    import {Piano} from '../../handpiano-scripts/piano'
+    import { onMount } from 'svelte';
+    import { Piano } from './../../handpiano-scripts/piano'
     import {pianoSketch} from '../../handpiano-scripts/sketch'
-    
-    const pianoScreen = new p5(pianoSketch)
-    
+    import * as p5 from 'p5';
+
     //giving values to empty p5 sketch properties
-    pianoScreen.hand = new Hand();
-    pianoScreen.piano = new Piano();
-    pianoScreen.container = 'pianoContainer'
+    let show = false;
+    const createSketch = () => {
+        show = !show;
+        if(show) {
+            const pianoP5= new p5(pianoSketch)
+            pianoP5.piano = new Piano()
+        }
+    }
+
 </script>
 
 <div>
     <div class="p5-container" id="pianoContainer"></div>
+    <p on:click={createSketch}>show</p>
+   
 </div>
-
+  
 
 <style>
     div {

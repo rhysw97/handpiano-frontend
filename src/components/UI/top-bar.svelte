@@ -1,20 +1,26 @@
 <script>
   
 </script>
-<header>
-    <h1>Hand Piano</h1>
-    <nav>
-        <ul id="topNav">
-            <li>About</li>
-            <li>Instructions</li>
-            <li>Planned Update</li>
-            <li>Play</li>
-        </ul>
-    </nav>
-</header>
-
+<div>
+    <header>
+        <h1>Hand Piano</h1>
+        <nav>
+            <ul id="topNav">
+                <li>About</li>
+                <li>Instructions</li>
+                <li>Planned Update</li>
+                <li>Play</li>
+            </ul>
+        </nav>
+    </header>
+    <div class="header-spacer"></div>
+</div>
 
 <style>
+    h1 {
+        font-family: 'Josefin Sans', sans-serif;
+    }
+
     header {
         display: flex;
         position: fixed;
@@ -48,6 +54,8 @@
     li {
         color: white;
     }
-
+    .header-spacer {
+        height: 100px;
+    }
 
 </style>
