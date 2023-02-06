@@ -2,7 +2,7 @@
     import JoinRoom from './join-room.svelte'
     import HandPiano from "./piano/hand-piano.svelte";
      let mode = 'select'
-
+//component handles start screen and allows user to select which mode they would like to use (Solo or Multiplayer)
      
     const modeSelect = event => {
         mode = event.target.getAttribute('data-mode');

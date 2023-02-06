@@ -1,5 +1,5 @@
 <script>
-  
+  //comonent to handle top bar and navigation menu
 </script>
 <div>
     <header>

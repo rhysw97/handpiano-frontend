@@ -9,11 +9,11 @@
 
     onMount (() => {
         console.log(document.getElementById("pianoContainer"))
-        let piano = new SocketPiano(name,);
-        console.log(piano)
+        let piano = new SocketPiano(name, id);
+       // console.log(piano)
         const pianoScreen = new p5(pianoSketch)
         pianoScreen.piano = piano
-        console.log(pianoScreen.piano)
+       // console.log(pianoScreen.piano)
     //giving values to empty p5 sketch properties
     //pianoScreen.piano = new SocketPiano()
     

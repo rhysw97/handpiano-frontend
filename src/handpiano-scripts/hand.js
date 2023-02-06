@@ -1,4 +1,4 @@
-
+//script to handle a hand object using ml5 hand pose
 export class Hand {
   constructor() {
     this.handpose;
@@ -9,7 +9,7 @@ export class Hand {
     this.startMessage = "Hand Model Loading Please Wait"
   }
 
-  //function to set up everything we need for handpose to work
+  //function to set up everything we need for handpose to work taking in width height and video 
   setupHandpose(width, height, video) {
    
       video.size(width, height);
@@ -31,7 +31,7 @@ export class Hand {
       this.predictions = results;
     });
   }
-  //takes in a single pr
+  //takes in a single prediction and adds the ithe predicition at index 2 and 3 into an object at the key of the corresponding finger
   addPointsToFingers(prediction) {
       
       this.fingers['thumb'] = [prediction.thumb[2], prediction.thumb[3]];
@@ -41,9 +41,9 @@ export class Hand {
       this.fingers['pinky'] = [prediction.pinky[2], prediction.pinky[3]];
   } 
 
-  //function to draw points of hand to p5 canvas
+  //function to draw points of hand to p5 canvas based on predictions given back by handpose
   draw(p) {
-    //loops through 
+    //loops through each prediction
     for (let i = 0; i < this.predictions.length; i += 1) {
       const prediction = this.predictions[i].annotations;
 
