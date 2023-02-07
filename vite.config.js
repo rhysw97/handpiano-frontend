@@ -5,4 +5,7 @@ import { svelte } from '@sveltejs/vite-plugin-svelte'
 export default defineConfig({
   base: "/handpiano-frontend",
   plugins: [svelte()],
+  build: {
+    minify: false
+  }
 })
