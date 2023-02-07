@@ -2,7 +2,7 @@
     import { onMount } from 'svelte';
     import { Piano } from './../../handpiano-scripts/piano'
     import {pianoSketch} from '../../handpiano-scripts/sketch'
-    import * as p5 from 'p5';
+
 
     //giving values to empty p5 sketch properties
     let show = false;
