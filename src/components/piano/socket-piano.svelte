@@ -3,7 +3,6 @@
     import {SocketPiano} from '../../handpiano-scripts/socket-piano'
     import {pianoSketch} from '../../handpiano-scripts/sketch'
     import { onMount } from 'svelte'
-    import * as p5 from 'p5'
     export let id;
     export let name;
 
