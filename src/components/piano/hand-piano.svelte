@@ -3,7 +3,6 @@
     import { Piano } from './../../handpiano-scripts/piano'
     import {pianoSketch} from '../../handpiano-scripts/sketch'
 
-
     //giving values to empty p5 sketch properties
     let show = false;
     const createSketch = () => {
