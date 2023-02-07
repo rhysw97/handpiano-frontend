@@ -7,7 +7,7 @@ export class SocketPiano extends Piano {
     //takes in a name and id given by user
     constructor(name, id) {
         super()
-        this.io = io('http://localhost:3000')
+        this.io = io('wss://handpiano-backend.glitch.me/')
         this.name = name
         this.id = id
         this.otherSynths= []
@@ -38,10 +38,12 @@ export class SocketPiano extends Piano {
         //handle if notes need to be played
         this.io.on("notes-to-play", data => {
 
-            console.log(data)
             this.otherSynths.forEach(synth => {
                 for(let i = 0; i < data.length; i++){
+                    console.log(`${synth.note} : ${data[i]}`)
+                    
                     if(synth.note === data[i]) {
+                        console.log(data[i])
                         synth.synth.triggerAttack(data[i])
                     }
                 }
@@ -51,6 +53,7 @@ export class SocketPiano extends Piano {
 
         //handle if notes need to be released
         this.io.on("notes-to-release", data => {
+    
             this.otherSynths.forEach(synth => {
                 for(let i = 0; i < data.length; i++){
                     if(synth.note === data[i]) {
@@ -66,7 +69,8 @@ export class SocketPiano extends Piano {
        if(this.notesToPlay.size > 0) {
         
         //if playing notes send to the server the notes that need to be played to send to other clients that are connected
-        this.io.emit('notes-to-play', this.notesToPlay)
+        console.log(typeof this.notesToPlay)
+        this.io.emit('notes-to-play', [...this.notesToPlay])
          this.keys.forEach(key => {
             //if 
            if(this.notesToPlay.has(key.note)) {
@@ -83,7 +87,7 @@ export class SocketPiano extends Piano {
      //uses polymorphism to rewrite function to send the notes to release set to server if it has 1 or more elements in it
      releaseNotes() {
       if(this.notesToRelease.size > 0) {
-        this.io.emit('notes-to-release', this.notesToRelease)
+        this.io.emit('notes-to-release', [...this.notesToRelease])
         this.keys.forEach(key => {
           if(this.notesToRelease.has(key.note)) {
             //console.log('hello')
