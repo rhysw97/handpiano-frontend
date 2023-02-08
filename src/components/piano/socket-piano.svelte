@@ -6,7 +6,7 @@
     export let id;
     export let name;
     let names = new Set(name)
-    let nameElements;
+    let nameElements = [name];
     
   
     onMount (() => {
