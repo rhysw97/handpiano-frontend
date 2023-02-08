@@ -85,9 +85,10 @@ export class SocketPiano extends Piano {
         this.io.emit('notes-to-play', [...this.notesToPlay])
          this.keys.forEach(key => {
             //if the current note is in the notesToPlay set then play the note
-           if(this.notesToPlay.has(key.note)) {
-             key.oscillator.triggerAttack(key.note)
-           }
+            if(this.notesToPlay.has(key.note)) {
+              key.colour = 155
+              key.oscillator.triggerAttack(key.note)
+            }
          })
          //add each not to notesPlaying and clear notes to play Array
          this.notesToPlay.forEach(note => {
@@ -103,6 +104,7 @@ export class SocketPiano extends Piano {
         this.io.emit('notes-to-release', [...this.notesToRelease])
         this.keys.forEach(key => {
           if(this.notesToRelease.has(key.note)) {
+            key.colour = 255
             //console.log('hello')
             key.oscillator.triggerRelease(key.note)
           }
