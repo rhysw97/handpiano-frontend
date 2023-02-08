@@ -71,6 +71,12 @@ function detach(node) {
     node.parentNode.removeChild(node);
   }
 }
+function destroy_each(iterations, detaching) {
+  for (let i2 = 0; i2 < iterations.length; i2 += 1) {
+    if (iterations[i2])
+      iterations[i2].d(detaching);
+  }
+}
 function element(name) {
   return document.createElement(name);
 }
@@ -79,6 +85,9 @@ function text(data) {
 }
 function space() {
   return text(" ");
+}
+function empty$1() {
+  return text("");
 }
 function listen(node, event, handler2, options) {
   node.addEventListener(event, handler2, options);
@@ -92,6 +101,11 @@ function attr(node, attribute, value2) {
 }
 function children(element2) {
   return Array.from(element2.childNodes);
+}
+function set_data(text2, data) {
+  data = "" + data;
+  if (text2.wholeText !== data)
+    text2.data = data;
 }
 let current_component;
 function set_current_component(component) {
@@ -315,17 +329,13 @@ class SvelteComponent {
   }
 }
 const topBar_svelte_svelte_type_style_lang = "";
-function create_fragment$5(ctx) {
+function create_fragment$6(ctx) {
   let div1;
   return {
     c() {
       div1 = element("div");
-      div1.innerHTML = `<header class="svelte-k1kqkd"><h1 class="svelte-k1kqkd">Hand Piano</h1> 
-        <nav class="svelte-k1kqkd"><ul id="topNav" class="svelte-k1kqkd"><li class="svelte-k1kqkd">About</li> 
-                <li class="svelte-k1kqkd">Instructions</li> 
-                <li class="svelte-k1kqkd">Planned Update</li> 
-                <li class="svelte-k1kqkd">Play</li></ul></nav></header> 
-    <div class="header-spacer svelte-k1kqkd"></div>`;
+      div1.innerHTML = `<header class="svelte-fwslct"><h1 class="svelte-fwslct">Hand Piano</h1></header> 
+    <div class="header-spacer svelte-fwslct"></div>`;
     },
     m(target, anchor) {
       insert(target, div1, anchor);
@@ -342,7 +352,7 @@ function create_fragment$5(ctx) {
 class Top_bar extends SvelteComponent {
   constructor(options) {
     super();
-    init(this, options, null, create_fragment$5, safe_not_equal, {});
+    init(this, options, null, create_fragment$6, safe_not_equal, {});
   }
 }
 class Hand {
@@ -14632,7 +14642,7 @@ class Key {
 class Piano {
   constructor() {
     this.keys = [];
-    this.notes = ["C4", "D4", "E4", "F4", "G4", "A4", "B4", "C4"];
+    this.notes = ["C4", "D4", "E4", "F4", "G4", "A4", "B4", "C5"];
     this.notesToPlay = /* @__PURE__ */ new Set();
     this.notesPlaying = /* @__PURE__ */ new Set();
     this.notesToRelease = /* @__PURE__ */ new Set();
@@ -16853,15 +16863,23 @@ Object.assign(lookup, {
   connect: lookup
 });
 class SocketPiano extends Piano {
-  constructor(name, id) {
+  constructor(name, id, callback) {
     super();
     this.io = lookup("wss://handpiano-backend.glitch.me/");
+    this.callback = callback;
     this.name = name;
     this.id = id;
     this.otherSynths = [];
     this.connectToServer();
     this.createOtherSynths();
     this.handleData();
+    this.socketNotesPlaying = /* @__PURE__ */ new Set();
+  }
+  onMessage() {
+    this.io.on(this.id, (name) => {
+      console.log(`${name}`);
+      this.callback(name);
+    });
   }
   createOtherSynths() {
     for (let i2 = 0; i2 < this.keys.length; i2++) {
@@ -16878,10 +16896,12 @@ class SocketPiano extends Piano {
     this.io.on("notes-to-play", (data) => {
       this.otherSynths.forEach((synth) => {
         for (let i2 = 0; i2 < data.length; i2++) {
-          console.log(`${synth.note} : ${data[i2]}`);
-          if (synth.note === data[i2]) {
-            console.log(data[i2]);
-            synth.synth.triggerAttack(data[i2]);
+          if (!this.socketNotesPlaying.has(data[i2])) {
+            this.socketNotesPlaying.add(data[i2]);
+            if (synth.note === data[i2]) {
+              console.log(data[i2]);
+              synth.synth.triggerAttack(data[i2]);
+            }
           }
         }
       });
@@ -16889,16 +16909,20 @@ class SocketPiano extends Piano {
     this.io.on("notes-to-release", (data) => {
       this.otherSynths.forEach((synth) => {
         for (let i2 = 0; i2 < data.length; i2++) {
-          if (synth.note === data[i2]) {
-            synth.synth.triggerRelease(data[i2]);
+          if (this.socketNotesPlaying.has(data[i2])) {
+            this.socketNotesPlaying.delete(data[i2]);
+            if (synth.note === data[i2]) {
+              synth.synth.triggerRelease(data[i2]);
+            }
           }
         }
       });
     });
   }
   playNotes() {
+    this.onMessage();
+    this.handleData();
     if (this.notesToPlay.size > 0) {
-      console.log(typeof this.notesToPlay);
       this.io.emit("notes-to-play", [...this.notesToPlay]);
       this.keys.forEach((key) => {
         if (this.notesToPlay.has(key.note)) {
@@ -16933,6 +16957,9 @@ const pianoSketch = (p) => {
     canvas.parent("pianoContainer");
     const video = p.createCapture(p.VIDEO);
     p.hand.setupHandpose(p.width, p.height, video);
+  };
+  p.windowResized = () => {
+    p.resizeCanvas(p.windowWidth, p.windowHeight);
   };
   p.draw = () => {
     p.fill(0);
@@ -16970,51 +16997,152 @@ const pianoSketch = (p) => {
   };
 };
 const socketPiano_svelte_svelte_type_style_lang = "";
-function create_fragment$4(ctx) {
-  let div1;
+function get_each_context(ctx, list, i2) {
+  const child_ctx = ctx.slice();
+  child_ctx[0] = list[i2];
+  return child_ctx;
+}
+function create_each_block(ctx) {
+  let li;
+  let t_value = ctx[0] + "";
+  let t;
   return {
     c() {
-      div1 = element("div");
-      div1.innerHTML = `<div class="p5-container svelte-kpn7pf" id="pianoContainer"></div>`;
-      attr(div1, "class", "svelte-kpn7pf");
+      li = element("li");
+      t = text(t_value);
     },
     m(target, anchor) {
-      insert(target, div1, anchor);
+      insert(target, li, anchor);
+      append(li, t);
     },
-    p: noop,
+    p(ctx2, dirty) {
+      if (dirty & 2 && t_value !== (t_value = ctx2[0] + ""))
+        set_data(t, t_value);
+    },
+    d(detaching) {
+      if (detaching)
+        detach(li);
+    }
+  };
+}
+function create_fragment$5(ctx) {
+  let div4;
+  let div0;
+  let t1;
+  let div3;
+  let div1;
+  let t2;
+  let div2;
+  let h2;
+  let t4;
+  let ul;
+  let each_value = ctx[1];
+  let each_blocks = [];
+  for (let i2 = 0; i2 < each_value.length; i2 += 1) {
+    each_blocks[i2] = create_each_block(get_each_context(ctx, each_value, i2));
+  }
+  return {
+    c() {
+      div4 = element("div");
+      div0 = element("div");
+      div0.innerHTML = `<p>Please Rotate your screen to use the piano</p>`;
+      t1 = space();
+      div3 = element("div");
+      div1 = element("div");
+      t2 = space();
+      div2 = element("div");
+      h2 = element("h2");
+      h2.textContent = "Making Music With:";
+      t4 = space();
+      ul = element("ul");
+      for (let i2 = 0; i2 < each_blocks.length; i2 += 1) {
+        each_blocks[i2].c();
+      }
+      attr(div0, "class", "mobile svelte-xp3fgu");
+      attr(div1, "class", "p5-container svelte-xp3fgu");
+      attr(div1, "id", "pianoContainer");
+      attr(ul, "class", "svelte-xp3fgu");
+      attr(div2, "class", "names svelte-xp3fgu");
+      attr(div3, "class", "sketch svelte-xp3fgu");
+      attr(div4, "class", "svelte-xp3fgu");
+    },
+    m(target, anchor) {
+      insert(target, div4, anchor);
+      append(div4, div0);
+      append(div4, t1);
+      append(div4, div3);
+      append(div3, div1);
+      append(div3, t2);
+      append(div3, div2);
+      append(div2, h2);
+      append(div2, t4);
+      append(div2, ul);
+      for (let i2 = 0; i2 < each_blocks.length; i2 += 1) {
+        each_blocks[i2].m(ul, null);
+      }
+    },
+    p(ctx2, [dirty]) {
+      if (dirty & 2) {
+        each_value = ctx2[1];
+        let i2;
+        for (i2 = 0; i2 < each_value.length; i2 += 1) {
+          const child_ctx = get_each_context(ctx2, each_value, i2);
+          if (each_blocks[i2]) {
+            each_blocks[i2].p(child_ctx, dirty);
+          } else {
+            each_blocks[i2] = create_each_block(child_ctx);
+            each_blocks[i2].c();
+            each_blocks[i2].m(ul, null);
+          }
+        }
+        for (; i2 < each_blocks.length; i2 += 1) {
+          each_blocks[i2].d(1);
+        }
+        each_blocks.length = each_value.length;
+      }
+    },
     i: noop,
     o: noop,
     d(detaching) {
       if (detaching)
-        detach(div1);
+        detach(div4);
+      destroy_each(each_blocks, detaching);
     }
   };
 }
 function instance$3($$self, $$props, $$invalidate) {
   let { id } = $$props;
   let { name } = $$props;
+  let nameElements;
   onMount(() => {
     console.log(document.getElementById("pianoContainer"));
-    let piano = new SocketPiano(name, id);
+    let piano = new SocketPiano(
+      name,
+      id,
+      (otherNames) => {
+        $$invalidate(1, nameElements = [...otherNames.json()]);
+        console.log(nameElements);
+      }
+    );
     const pianoScreen = new p5(pianoSketch);
     pianoScreen.piano = piano;
   });
   $$self.$$set = ($$props2) => {
     if ("id" in $$props2)
-      $$invalidate(0, id = $$props2.id);
+      $$invalidate(2, id = $$props2.id);
     if ("name" in $$props2)
-      $$invalidate(1, name = $$props2.name);
+      $$invalidate(0, name = $$props2.name);
   };
-  return [id, name];
+  return [name, nameElements, id];
 }
 class Socket_piano extends SvelteComponent {
   constructor(options) {
     super();
-    init(this, options, instance$3, create_fragment$4, safe_not_equal, { id: 0, name: 1 });
+    init(this, options, instance$3, create_fragment$5, safe_not_equal, { id: 2, name: 0 });
   }
 }
 const joinRoom_svelte_svelte_type_style_lang = "";
-function create_else_block(ctx) {
+function create_else_block$1(ctx) {
   let socketpiano;
   let current;
   socketpiano = new Socket_piano({
@@ -17069,16 +17197,16 @@ function create_if_block$1(ctx) {
       t1 = space();
       form = element("form");
       div0 = element("div");
-      div0.innerHTML = `<input type="text" id="name" class="name svelte-1m8hpmi" placeholder="Name" value="" required=""/> 
-                <input type="text" id="roomId" class="room-id svelte-1m8hpmi" placeholder="Room ID" value="" required=""/>`;
+      div0.innerHTML = `<input type="text" id="name" class="name svelte-puxig2" placeholder="Name" value="" required=""/> 
+                <input type="text" id="roomId" class="room-id svelte-puxig2" placeholder="Room ID" value="" required=""/>`;
       t3 = space();
       p = element("p");
       p.textContent = "Join Room";
-      attr(h2, "class", "svelte-1m8hpmi");
-      attr(div0, "class", "input-wrapper svelte-1m8hpmi");
-      attr(p, "class", "svelte-1m8hpmi");
-      attr(form, "class", "svelte-1m8hpmi");
-      attr(div1, "class", "join svelte-1m8hpmi");
+      attr(h2, "class", "svelte-puxig2");
+      attr(div0, "class", "input-wrapper svelte-puxig2");
+      attr(p, "class", "svelte-puxig2");
+      attr(form, "class", "svelte-puxig2");
+      attr(div1, "class", "join svelte-puxig2");
     },
     m(target, anchor) {
       insert(target, div1, anchor);
@@ -17104,12 +17232,12 @@ function create_if_block$1(ctx) {
     }
   };
 }
-function create_fragment$3(ctx) {
+function create_fragment$4(ctx) {
   let div;
   let current_block_type_index;
   let if_block;
   let current;
-  const if_block_creators = [create_if_block$1, create_else_block];
+  const if_block_creators = [create_if_block$1, create_else_block$1];
   const if_blocks = [];
   function select_block_type(ctx2, dirty) {
     if (!ctx2[0])
@@ -17181,37 +17309,20 @@ function instance$2($$self, $$props, $$invalidate) {
 class Join_room extends SvelteComponent {
   constructor(options) {
     super();
-    init(this, options, instance$2, create_fragment$3, safe_not_equal, {});
+    init(this, options, instance$2, create_fragment$4, safe_not_equal, {});
   }
 }
 const handPiano_svelte_svelte_type_style_lang = "";
-function create_fragment$2(ctx) {
+function create_fragment$3(ctx) {
   let div1;
-  let div0;
-  let t0;
-  let p;
-  let mounted;
-  let dispose;
   return {
     c() {
       div1 = element("div");
-      div0 = element("div");
-      t0 = space();
-      p = element("p");
-      p.textContent = "show";
-      attr(div0, "class", "p5-container svelte-kpn7pf");
-      attr(div0, "id", "pianoContainer");
-      attr(div1, "class", "svelte-kpn7pf");
+      div1.innerHTML = `<div class="p5-container svelte-181mpr8" id="pianoContainer"></div>`;
+      attr(div1, "class", "container svelte-181mpr8");
     },
     m(target, anchor) {
       insert(target, div1, anchor);
-      append(div1, div0);
-      append(div1, t0);
-      append(div1, p);
-      if (!mounted) {
-        dispose = listen(p, "click", ctx[0]);
-        mounted = true;
-      }
     },
     p: noop,
     i: noop,
@@ -17219,30 +17330,71 @@ function create_fragment$2(ctx) {
     d(detaching) {
       if (detaching)
         detach(div1);
-      mounted = false;
-      dispose();
     }
   };
 }
 function instance$1($$self) {
-  let show = false;
-  const createSketch = () => {
-    show = !show;
-    if (show) {
-      const pianoP5 = new p5(pianoSketch);
-      pianoP5.piano = new Piano();
-    }
-  };
-  return [createSketch];
+  onMount(() => {
+    const pianoP5 = new p5(pianoSketch);
+    pianoP5.piano = new Piano();
+  });
+  return [];
 }
 class Hand_piano extends SvelteComponent {
   constructor(options) {
     super();
-    init(this, options, instance$1, create_fragment$2, safe_not_equal, {});
+    init(this, options, instance$1, create_fragment$3, safe_not_equal, {});
+  }
+}
+const Instructions_svelte_svelte_type_style_lang = "";
+function create_fragment$2(ctx) {
+  let div2;
+  return {
+    c() {
+      div2 = element("div");
+      div2.innerHTML = `<article class="about svelte-u6jg6w"><h2 class="svelte-u6jg6w">About</h2> 
+        <p class="svelte-u6jg6w">This app is designed to allow a user to play a virtual piano created using <a target="_blank" rel="noreferrer" href="https://p5js.org/" class="svelte-u6jg6w">p5.js</a> and <a target="_blank" rel="noreferrer" href="https://tonejs.github.io/" class="svelte-u6jg6w">Tone JS</a> which can be controlled with your hand and a webcam powered by <a target="_blank" rel="noreferrer" href="https://learn.ml5js.org/#/reference/handpose" class="svelte-u6jg6w">handpose ml5</a></p> 
+
+        <p class="svelte-u6jg6w">If you choose multiplayer mode you will be able to connect with other people using the site and play together.</p> 
+
+        <p class="svelte-u6jg6w">There are many planned updates such as having settings to edit the sound of the synth as well as a chat function within rooms and even a more responsive piano for mobile.</p></article> 
+
+    <article class="instructions svelte-u6jg6w"><h2 class="svelte-u6jg6w">Instructions</h2> 
+        <div class="solo svelte-u6jg6w"><h3 class="svelte-u6jg6w">Solo</h3> 
+            <ul><li class="svelte-u6jg6w">Click Solo below</li> 
+                <li class="svelte-u6jg6w">Wait for handpose to load and once prompted click on the black rectangle</li> 
+                <li class="svelte-u6jg6w">Once the keys appear hold one hand up infront of the camera</li> 
+                <li class="svelte-u6jg6w">Green dots should appear tracking your hands movements which you can move to hover any key of the piano</li> 
+                <li class="svelte-u6jg6w">When a finger is over the desired key ben the top joint of the finger to play the note</li> 
+                <li class="svelte-u6jg6w">The note will release once finger either leaves the note or is straightened</li> 
+                <li class="svelte-u6jg6w">Note: the black notes do not work and are just for aesthetics</li></ul></div> 
+        <div class="multiplayer svelte-u6jg6w"><h3 class="svelte-u6jg6w">Multiplayer</h3> 
+            <ul><li class="svelte-u6jg6w">Click multiplayer below</li> 
+                <li class="svelte-u6jg6w">Enter your dersired name into the top input field</li> 
+                <li class="svelte-u6jg6w">Enter the id of the room you want to join. If no room with id entered exists then a new room will be created</li> 
+                <li class="svelte-u6jg6w">Click Join Room button</li> 
+                <li class="svelte-u6jg6w">Follow the steps under the solo section to use the piano</li></ul></div></article>`;
+    },
+    m(target, anchor) {
+      insert(target, div2, anchor);
+    },
+    p: noop,
+    i: noop,
+    o: noop,
+    d(detaching) {
+      if (detaching)
+        detach(div2);
+    }
+  };
+}
+class Instructions extends SvelteComponent {
+  constructor(options) {
+    super();
+    init(this, options, null, create_fragment$2, safe_not_equal, {});
   }
 }
 const modeSelect_svelte_svelte_type_style_lang = "";
-function create_if_block_2(ctx) {
+function create_if_block_3(ctx) {
   let joinroom;
   let current;
   joinroom = new Join_room({});
@@ -17271,39 +17423,144 @@ function create_if_block_2(ctx) {
   };
 }
 function create_if_block_1(ctx) {
-  let handpiano;
+  let current_block_type_index;
+  let if_block;
+  let if_block_anchor;
+  let current;
+  const if_block_creators = [create_if_block_2, create_else_block];
+  const if_blocks = [];
+  function select_block_type_1(ctx2, dirty) {
+    if (window.innerWidth < 640)
+      return 0;
+    return 1;
+  }
+  current_block_type_index = select_block_type_1();
+  if_block = if_blocks[current_block_type_index] = if_block_creators[current_block_type_index](ctx);
+  return {
+    c() {
+      if_block.c();
+      if_block_anchor = empty$1();
+    },
+    m(target, anchor) {
+      if_blocks[current_block_type_index].m(target, anchor);
+      insert(target, if_block_anchor, anchor);
+      current = true;
+    },
+    p: noop,
+    i(local) {
+      if (current)
+        return;
+      transition_in(if_block);
+      current = true;
+    },
+    o(local) {
+      transition_out(if_block);
+      current = false;
+    },
+    d(detaching) {
+      if_blocks[current_block_type_index].d(detaching);
+      if (detaching)
+        detach(if_block_anchor);
+    }
+  };
+}
+function create_if_block(ctx) {
+  let instructions;
   let t0;
+  let div1;
+  let h2;
+  let t2;
   let p0;
-  let t1;
+  let t4;
+  let div0;
   let p1;
+  let t6;
+  let p2;
   let current;
   let mounted;
   let dispose;
-  handpiano = new Hand_piano({});
+  instructions = new Instructions({});
   return {
     c() {
-      create_component(handpiano.$$.fragment);
+      create_component(instructions.$$.fragment);
       t0 = space();
+      div1 = element("div");
+      h2 = element("h2");
+      h2.textContent = "Please Select version of Hand Piano";
+      t2 = space();
       p0 = element("p");
-      t1 = space();
+      p0.textContent = "Multiplayer Mode will allow you to connect with other users via rooms so that you can play together whereas Solo will allow you to play on your own";
+      t4 = space();
+      div0 = element("div");
       p1 = element("p");
-      p1.textContent = "Back";
-      attr(p0, "data-mode", "select");
-      attr(p1, "data-mode", "");
+      p1.textContent = "Multiplayer Mode";
+      t6 = space();
+      p2 = element("p");
+      p2.textContent = "Solo Mode";
+      attr(h2, "class", "svelte-o9hdj8");
+      attr(p0, "class", "svelte-o9hdj8");
+      attr(p1, "data-mode", "multiplayer");
+      attr(p1, "class", "svelte-o9hdj8");
+      attr(p2, "data-mode", "solo");
+      attr(p2, "class", "svelte-o9hdj8");
+      attr(div0, "class", "options svelte-o9hdj8");
+      attr(div1, "class", "version-select svelte-o9hdj8");
     },
     m(target, anchor) {
-      mount_component(handpiano, target, anchor);
+      mount_component(instructions, target, anchor);
       insert(target, t0, anchor);
-      insert(target, p0, anchor);
-      insert(target, t1, anchor);
-      insert(target, p1, anchor);
+      insert(target, div1, anchor);
+      append(div1, h2);
+      append(div1, t2);
+      append(div1, p0);
+      append(div1, t4);
+      append(div1, div0);
+      append(div0, p1);
+      append(div0, t6);
+      append(div0, p2);
       current = true;
       if (!mounted) {
-        dispose = listen(p0, "click", ctx[1]);
+        dispose = [
+          listen(p1, "click", ctx[1]),
+          listen(p2, "click", ctx[1])
+        ];
         mounted = true;
       }
     },
     p: noop,
+    i(local) {
+      if (current)
+        return;
+      transition_in(instructions.$$.fragment, local);
+      current = true;
+    },
+    o(local) {
+      transition_out(instructions.$$.fragment, local);
+      current = false;
+    },
+    d(detaching) {
+      destroy_component(instructions, detaching);
+      if (detaching)
+        detach(t0);
+      if (detaching)
+        detach(div1);
+      mounted = false;
+      run_all(dispose);
+    }
+  };
+}
+function create_else_block(ctx) {
+  let handpiano;
+  let current;
+  handpiano = new Hand_piano({});
+  return {
+    c() {
+      create_component(handpiano.$$.fragment);
+    },
+    m(target, anchor) {
+      mount_component(handpiano, target, anchor);
+      current = true;
+    },
     i(local) {
       if (current)
         return;
@@ -17316,80 +17573,25 @@ function create_if_block_1(ctx) {
     },
     d(detaching) {
       destroy_component(handpiano, detaching);
-      if (detaching)
-        detach(t0);
-      if (detaching)
-        detach(p0);
-      if (detaching)
-        detach(t1);
-      if (detaching)
-        detach(p1);
-      mounted = false;
-      dispose();
     }
   };
 }
-function create_if_block(ctx) {
-  let div1;
-  let h2;
-  let t1;
-  let p0;
-  let t3;
-  let div0;
-  let p1;
-  let t5;
-  let p2;
-  let mounted;
-  let dispose;
+function create_if_block_2(ctx) {
+  let div;
   return {
     c() {
-      div1 = element("div");
-      h2 = element("h2");
-      h2.textContent = "Please Select version of Hand Piano";
-      t1 = space();
-      p0 = element("p");
-      p0.textContent = "Multiplayer Mode will allow you to connect with other users via rooms so that you can play together whereas Solo will allow you to play on your own";
-      t3 = space();
-      div0 = element("div");
-      p1 = element("p");
-      p1.textContent = "Multiplayer Mode";
-      t5 = space();
-      p2 = element("p");
-      p2.textContent = "Solo Mode";
-      attr(h2, "class", "svelte-1dpf1u1");
-      attr(p1, "data-mode", "multiplayer");
-      attr(p1, "class", "svelte-1dpf1u1");
-      attr(p2, "data-mode", "solo");
-      attr(p2, "class", "svelte-1dpf1u1");
-      attr(div0, "class", "options svelte-1dpf1u1");
-      attr(div1, "class", "version-select svelte-1dpf1u1");
+      div = element("div");
+      div.innerHTML = `<p class="svelte-o9hdj8">Please rotate your phone to landscape mode to use</p>`;
+      attr(div, "class", "mobile svelte-o9hdj8");
     },
     m(target, anchor) {
-      insert(target, div1, anchor);
-      append(div1, h2);
-      append(div1, t1);
-      append(div1, p0);
-      append(div1, t3);
-      append(div1, div0);
-      append(div0, p1);
-      append(div0, t5);
-      append(div0, p2);
-      if (!mounted) {
-        dispose = [
-          listen(p1, "click", ctx[1]),
-          listen(p2, "click", ctx[1])
-        ];
-        mounted = true;
-      }
+      insert(target, div, anchor);
     },
-    p: noop,
     i: noop,
     o: noop,
     d(detaching) {
       if (detaching)
-        detach(div1);
-      mounted = false;
-      run_all(dispose);
+        detach(div);
     }
   };
 }
@@ -17398,7 +17600,7 @@ function create_fragment$1(ctx) {
   let current_block_type_index;
   let if_block;
   let current;
-  const if_block_creators = [create_if_block, create_if_block_1, create_if_block_2];
+  const if_block_creators = [create_if_block, create_if_block_1, create_if_block_3];
   const if_blocks = [];
   function select_block_type(ctx2, dirty) {
     if (ctx2[0] === "select")
@@ -17476,6 +17678,14 @@ function create_fragment$1(ctx) {
 }
 function instance($$self, $$props, $$invalidate) {
   let mode = "select";
+  let pianoP5;
+  onMount(() => {
+    if (mode === "solo") {
+      console.log("wey");
+      pianoP5 = new p5(pianoSketch);
+      pianoP5.piano = new Piano();
+    }
+  });
   const modeSelect = (event) => {
     $$invalidate(0, mode = event.target.getAttribute("data-mode"));
   };
