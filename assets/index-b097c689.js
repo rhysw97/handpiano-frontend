@@ -17113,7 +17113,7 @@ function create_fragment$5(ctx) {
 function instance$3($$self, $$props, $$invalidate) {
   let { id } = $$props;
   let { name } = $$props;
-  let nameElements;
+  let nameElements = [name];
   onMount(() => {
     console.log(document.getElementById("pianoContainer"));
     let piano = new SocketPiano(
@@ -17357,7 +17357,9 @@ function create_fragment$2(ctx) {
 
         <p class="svelte-u6jg6w">If you choose multiplayer mode you will be able to connect with other people using the site and play together.</p> 
 
-        <p class="svelte-u6jg6w">There are many planned updates such as having settings to edit the sound of the synth as well as a chat function within rooms and even a more responsive piano for mobile.</p></article> 
+        <p class="svelte-u6jg6w">There are many planned updates such as having settings to edit the sound of the synth as well as a chat function within rooms and even a more responsive piano for mobile.</p> 
+
+        <p class="svelte-u6jg6w">Please refresh page if you need to return to this menu</p></article> 
 
     <article class="instructions svelte-u6jg6w"><h2 class="svelte-u6jg6w">Instructions</h2> 
         <div class="solo svelte-u6jg6w"><h3 class="svelte-u6jg6w">Solo</h3> 
