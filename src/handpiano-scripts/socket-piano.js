@@ -28,7 +28,7 @@ export class SocketPiano extends Piano {
     //adds synths to other synths array to be triggered by other clients using the socket piano
     createOtherSynths() {
         for (let i = 0; i < this.keys.length; i++) {
-            this.otherSynths.push({ note: this.keys[i].note, synth: new Tone.PolySynth()})
+            this.otherSynths.push({ note: this.keys[i].note, synth: new Tone.PolySynth().toDestination})
         }
     }
 
@@ -44,14 +44,16 @@ export class SocketPiano extends Piano {
     handleData() {
         //handle if notes need to be played
         this.io.on("notes-to-play", data => {
-
+          console.log(data)
           this.otherSynths.forEach(synth => {
             for(let i = 0; i < data.length; i++){
+              console.log(data[i])
               if(!this.socketNotesPlaying.has(data[i])) {
                 this.socketNotesPlaying.add(data[i])
                 
                 if(synth.note === data[i]) {
                     console.log(data[i])
+                    console.log(synth)
                     synth.synth.triggerAttack(data[i])
                 }
               }
