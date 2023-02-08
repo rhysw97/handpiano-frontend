@@ -5,19 +5,26 @@ import * as Tone from 'tone'
 //class to create a piano to be used with socket io.
 export class SocketPiano extends Piano {
     //takes in a name and id given by user
-    constructor(name, id) {
+    constructor(name, id, callback) {
         super()
         this.io = io('wss://handpiano-backend.glitch.me/')
+        this.callback = callback
         this.name = name
         this.id = id
         this.otherSynths= []
         this.connectToServer()
         this.createOtherSynths()
         this.handleData()
-    
-
+        this.socketNotesPlaying = new Set();
+        
     }
 
+    onMessage() {
+      this.io.on("message", data => {
+        console.log(data)
+        this.callback(data)
+      } )
+    }
     //adds synths to other synths array to be triggered by other clients using the socket piano
     createOtherSynths() {
         for (let i = 0; i < this.keys.length; i++) {
@@ -38,17 +45,18 @@ export class SocketPiano extends Piano {
         //handle if notes need to be played
         this.io.on("notes-to-play", data => {
 
-            this.otherSynths.forEach(synth => {
-                for(let i = 0; i < data.length; i++){
-                    console.log(`${synth.note} : ${data[i]}`)
-                    
-                    if(synth.note === data[i]) {
-                        console.log(data[i])
-                        synth.synth.triggerAttack(data[i])
-                    }
+          this.otherSynths.forEach(synth => {
+            for(let i = 0; i < data.length; i++){
+              if(!this.socketNotesPlaying.has(data[i])) {
+                this.socketNotesPlaying.add(data[i])
+                
+                if(synth.note === data[i]) {
+                    console.log(data[i])
+                    synth.synth.triggerAttack(data[i])
                 }
-              
-            })
+              }
+            }
+          })
         })
 
         //handle if notes need to be released
@@ -56,27 +64,32 @@ export class SocketPiano extends Piano {
     
             this.otherSynths.forEach(synth => {
                 for(let i = 0; i < data.length; i++){
+                  if(this.socketNotesPlaying.has(data[i])){
+                    this.socketNotesPlaying.delete(data[i])
                     if(synth.note === data[i]) {
-                        synth.synth.triggerRelease(data[i])
+                      synth.synth.triggerRelease(data[i])
                     }
+                  }
                 }
             })
         })
     }
   
     playNotes() {
+      this.onMessage()
+      this.handleData()
       // console.log(this.notesToPlay);
        if(this.notesToPlay.size > 0) {
         
         //if playing notes send to the server the notes that need to be played to send to other clients that are connected
-        console.log(typeof this.notesToPlay)
         this.io.emit('notes-to-play', [...this.notesToPlay])
          this.keys.forEach(key => {
-            //if 
+            //if the current note is in the notesToPlay set then play the note
            if(this.notesToPlay.has(key.note)) {
              key.oscillator.triggerAttack(key.note)
            }
          })
+         //add each not to notesPlaying and clear notes to play Array
          this.notesToPlay.forEach(note => {
            this.notesPlaying.add(note)
          })

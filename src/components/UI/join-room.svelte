@@ -1,13 +1,14 @@
 
 <script>
 
-    import SocketPiano from "./piano/socket-piano.svelte";
+    import SocketPiano from "./../piano/socket-piano.svelte";
     import io from 'socket.io-client'
     //component to show a form to allow users to put in their name and id and enter them to show the socket-piano component
 
     let joined = false
     let name = '' ;
     let id = '';
+    let names = []
 </script>
 
 <div>
@@ -28,8 +29,9 @@
             }}>Join Room</p>
         </form>
     </div>
+
     {:else} 
-        <SocketPiano name={name} id={id} />
+        <SocketPiano name={name} id={id}/>
     {/if}
     
 </div>
@@ -43,9 +45,9 @@
         display: flex;
         flex-direction: column;
         gap: 20px;
-        border-radius: 20px;
+        border-radius: 50px;
         padding: 20px;
-
+        margin-top: 40px;
     }
      .options {
         margin: 0 auto;

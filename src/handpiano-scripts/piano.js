@@ -71,7 +71,7 @@ class Key {
 export class Piano {
   constructor() {
     this.keys = []
-    this.notes = ['C4', 'D4', 'E4', 'F4', 'G4', 'A4', 'B4', 'C4']
+    this.notes = ['C4', 'D4', 'E4', 'F4', 'G4', 'A4', 'B4', 'C5']
     this.notesToPlay = new Set()
     this.notesPlaying = new Set()
     this.notesToRelease = new Set()
@@ -81,6 +81,7 @@ export class Piano {
   //function to create key objects and add them to piano's keys array
   createKeys() {
     for(let i = 0; i < this.notes.length; i++) {
+
       //passes in x, y, width and height of the key as well as the note and colour
       let tempKey = new Key(i * 80, 0, 80, 480, this.notes[i], 'white')
       this.keys.push(tempKey);

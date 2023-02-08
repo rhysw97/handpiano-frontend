@@ -22,6 +22,10 @@ export const pianoSketch = (p) => {
 
   }
 
+  p.windowResized = () => {
+    p.resizeCanvas(p.windowWidth, p.windowHeight);
+  }
+
   p.draw = () => {
   //  console.log(p.piano);
     //image(video, 0, 0, width, height);
