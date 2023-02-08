@@ -16,7 +16,7 @@ class Key {
 
   //draws white rectangle to canvas
   draw(p) {
-    p.fill(255);
+    p.fill(this.colour);
     p.stroke(0);
     p.rect(this.x, this.y, this.width, this.height);
     p.fill(0)
@@ -83,7 +83,7 @@ export class Piano {
     for(let i = 0; i < this.notes.length; i++) {
 
       //passes in x, y, width and height of the key as well as the note and colour
-      let tempKey = new Key(i * 80, 0, 80, 480, this.notes[i], 'white')
+      let tempKey = new Key(i * 80, 0, 80, 480, this.notes[i], 255)
       this.keys.push(tempKey);
     }
   }
@@ -100,7 +100,9 @@ export class Piano {
    // console.log(this.notesToPlay);
     if(this.notesToPlay.size > 0) {
       this.keys.forEach(key => {
+      
         if(this.notesToPlay.has(key.note)) {
+          key.colour = 155
           key.oscillator.triggerAttack(key.note)
         }
       })
@@ -115,6 +117,7 @@ export class Piano {
   releaseNotes() {
     if(this.notesToRelease.size > 0) {
       this.keys.forEach(key => {
+        key.colour = 255
         if(this.notesToRelease.has(key.note)) {
           //console.log('hello')
           key.oscillator.triggerRelease(key.note)
