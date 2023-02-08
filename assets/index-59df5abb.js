@@ -329,7 +329,7 @@ class SvelteComponent {
   }
 }
 const topBar_svelte_svelte_type_style_lang = "";
-function create_fragment$6(ctx) {
+function create_fragment$7(ctx) {
   let div1;
   return {
     c() {
@@ -352,7 +352,7 @@ function create_fragment$6(ctx) {
 class Top_bar extends SvelteComponent {
   constructor(options) {
     super();
-    init(this, options, null, create_fragment$6, safe_not_equal, {});
+    init(this, options, null, create_fragment$7, safe_not_equal, {});
   }
 }
 class Hand {
@@ -16885,7 +16885,7 @@ class SocketPiano extends Piano {
   }
   createOtherSynths() {
     for (let i2 = 0; i2 < this.keys.length; i2++) {
-      this.otherSynths.push({ note: this.keys[i2].note, synth: new PolySynth() });
+      this.otherSynths.push({ note: this.keys[i2].note, synth: new PolySynth().toDestination });
     }
   }
   connectToServer() {
@@ -16896,12 +16896,15 @@ class SocketPiano extends Piano {
   }
   handleData() {
     this.io.on("notes-to-play", (data) => {
+      console.log(data);
       this.otherSynths.forEach((synth) => {
         for (let i2 = 0; i2 < data.length; i2++) {
+          console.log(data[i2]);
           if (!this.socketNotesPlaying.has(data[i2])) {
             this.socketNotesPlaying.add(data[i2]);
             if (synth.note === data[i2]) {
               console.log(data[i2]);
+              console.log(synth);
               synth.synth.triggerAttack(data[i2]);
             }
           }
@@ -17000,15 +17003,15 @@ const pianoSketch = (p) => {
     }
   };
 };
-const socketPiano_svelte_svelte_type_style_lang = "";
+const usersInRoom_svelte_svelte_type_style_lang = "";
 function get_each_context(ctx, list, i2) {
   const child_ctx = ctx.slice();
-  child_ctx[0] = list[i2];
+  child_ctx[1] = list[i2];
   return child_ctx;
 }
 function create_each_block(ctx) {
   let li;
-  let t_value = ctx[0] + "";
+  let t_value = ctx[1] + "";
   let t;
   return {
     c() {
@@ -17020,7 +17023,7 @@ function create_each_block(ctx) {
       append(li, t);
     },
     p(ctx2, dirty) {
-      if (dirty & 2 && t_value !== (t_value = ctx2[0] + ""))
+      if (dirty & 1 && t_value !== (t_value = ctx2[1] + ""))
         set_data(t, t_value);
     },
     d(detaching) {
@@ -17029,65 +17032,34 @@ function create_each_block(ctx) {
     }
   };
 }
-function create_fragment$5(ctx) {
-  let div4;
-  let div0;
-  let t1;
-  let div3;
-  let div1;
-  let t2;
-  let div2;
-  let h2;
-  let t4;
+function create_fragment$6(ctx) {
+  let div;
   let ul;
-  let each_value = ctx[1];
+  let each_value = ctx[0];
   let each_blocks = [];
   for (let i2 = 0; i2 < each_value.length; i2 += 1) {
     each_blocks[i2] = create_each_block(get_each_context(ctx, each_value, i2));
   }
   return {
     c() {
-      div4 = element("div");
-      div0 = element("div");
-      div0.innerHTML = `<p>Please Rotate your screen to use the piano</p>`;
-      t1 = space();
-      div3 = element("div");
-      div1 = element("div");
-      t2 = space();
-      div2 = element("div");
-      h2 = element("h2");
-      h2.textContent = "Making Music With:";
-      t4 = space();
+      div = element("div");
       ul = element("ul");
       for (let i2 = 0; i2 < each_blocks.length; i2 += 1) {
         each_blocks[i2].c();
       }
-      attr(div0, "class", "mobile svelte-xp3fgu");
-      attr(div1, "class", "p5-container svelte-xp3fgu");
-      attr(div1, "id", "pianoContainer");
-      attr(ul, "class", "svelte-xp3fgu");
-      attr(div2, "class", "names svelte-xp3fgu");
-      attr(div3, "class", "sketch svelte-xp3fgu");
-      attr(div4, "class", "svelte-xp3fgu");
+      attr(ul, "class", "svelte-15oia3d");
+      attr(div, "class", "users");
     },
     m(target, anchor) {
-      insert(target, div4, anchor);
-      append(div4, div0);
-      append(div4, t1);
-      append(div4, div3);
-      append(div3, div1);
-      append(div3, t2);
-      append(div3, div2);
-      append(div2, h2);
-      append(div2, t4);
-      append(div2, ul);
+      insert(target, div, anchor);
+      append(div, ul);
       for (let i2 = 0; i2 < each_blocks.length; i2 += 1) {
         each_blocks[i2].m(ul, null);
       }
     },
     p(ctx2, [dirty]) {
-      if (dirty & 2) {
-        each_value = ctx2[1];
+      if (dirty & 1) {
+        each_value = ctx2[0];
         let i2;
         for (i2 = 0; i2 < each_value.length; i2 += 1) {
           const child_ctx = get_each_context(ctx2, each_value, i2);
@@ -17109,8 +17081,95 @@ function create_fragment$5(ctx) {
     o: noop,
     d(detaching) {
       if (detaching)
-        detach(div4);
+        detach(div);
       destroy_each(each_blocks, detaching);
+    }
+  };
+}
+function instance$4($$self, $$props, $$invalidate) {
+  let { names = [] } = $$props;
+  $$self.$$set = ($$props2) => {
+    if ("names" in $$props2)
+      $$invalidate(0, names = $$props2.names);
+  };
+  return [names];
+}
+class Users_in_room extends SvelteComponent {
+  constructor(options) {
+    super();
+    init(this, options, instance$4, create_fragment$6, safe_not_equal, { names: 0 });
+  }
+}
+const socketPiano_svelte_svelte_type_style_lang = "";
+function create_fragment$5(ctx) {
+  let div4;
+  let div0;
+  let t1;
+  let div3;
+  let div1;
+  let t2;
+  let div2;
+  let h2;
+  let t4;
+  let usersinroom;
+  let current;
+  usersinroom = new Users_in_room({
+    props: { names: ctx[0] }
+  });
+  return {
+    c() {
+      div4 = element("div");
+      div0 = element("div");
+      div0.innerHTML = `<p>Please Rotate your screen to use the piano</p>`;
+      t1 = space();
+      div3 = element("div");
+      div1 = element("div");
+      t2 = space();
+      div2 = element("div");
+      h2 = element("h2");
+      h2.textContent = "Making Music With:";
+      t4 = space();
+      create_component(usersinroom.$$.fragment);
+      attr(div0, "class", "mobile svelte-m20dms");
+      attr(div1, "class", "p5-container svelte-m20dms");
+      attr(div1, "id", "pianoContainer");
+      attr(div2, "class", "names svelte-m20dms");
+      attr(div3, "class", "sketch svelte-m20dms");
+      attr(div4, "class", "svelte-m20dms");
+    },
+    m(target, anchor) {
+      insert(target, div4, anchor);
+      append(div4, div0);
+      append(div4, t1);
+      append(div4, div3);
+      append(div3, div1);
+      append(div3, t2);
+      append(div3, div2);
+      append(div2, h2);
+      append(div2, t4);
+      mount_component(usersinroom, div2, null);
+      current = true;
+    },
+    p(ctx2, [dirty]) {
+      const usersinroom_changes = {};
+      if (dirty & 1)
+        usersinroom_changes.names = ctx2[0];
+      usersinroom.$set(usersinroom_changes);
+    },
+    i(local) {
+      if (current)
+        return;
+      transition_in(usersinroom.$$.fragment, local);
+      current = true;
+    },
+    o(local) {
+      transition_out(usersinroom.$$.fragment, local);
+      current = false;
+    },
+    d(detaching) {
+      if (detaching)
+        detach(div4);
+      destroy_component(usersinroom);
     }
   };
 }
@@ -17124,7 +17183,7 @@ function instance$3($$self, $$props, $$invalidate) {
       name,
       id,
       (otherNames) => {
-        $$invalidate(1, nameElements = [...otherNames.json()]);
+        $$invalidate(0, nameElements = [...otherNames.json()]);
         console.log(nameElements);
       }
     );
@@ -17133,16 +17192,16 @@ function instance$3($$self, $$props, $$invalidate) {
   });
   $$self.$$set = ($$props2) => {
     if ("id" in $$props2)
-      $$invalidate(2, id = $$props2.id);
+      $$invalidate(1, id = $$props2.id);
     if ("name" in $$props2)
-      $$invalidate(0, name = $$props2.name);
+      $$invalidate(2, name = $$props2.name);
   };
-  return [name, nameElements, id];
+  return [nameElements, id, name];
 }
 class Socket_piano extends SvelteComponent {
   constructor(options) {
     super();
-    init(this, options, instance$3, create_fragment$5, safe_not_equal, { id: 2, name: 0 });
+    init(this, options, instance$3, create_fragment$5, safe_not_equal, { id: 1, name: 2 });
   }
 }
 const joinRoom_svelte_svelte_type_style_lang = "";
