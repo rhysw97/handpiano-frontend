@@ -14616,7 +14616,7 @@ class Key {
     this.oscillator = new PolySynth().toDestination();
   }
   draw(p) {
-    p.fill(255);
+    p.fill(this.colour);
     p.stroke(0);
     p.rect(this.x, this.y, this.width, this.height);
     p.fill(0);
@@ -14650,7 +14650,7 @@ class Piano {
   }
   createKeys() {
     for (let i2 = 0; i2 < this.notes.length; i2++) {
-      let tempKey = new Key(i2 * 80, 0, 80, 480, this.notes[i2], "white");
+      let tempKey = new Key(i2 * 80, 0, 80, 480, this.notes[i2], 255);
       this.keys.push(tempKey);
     }
   }
@@ -14663,6 +14663,7 @@ class Piano {
     if (this.notesToPlay.size > 0) {
       this.keys.forEach((key) => {
         if (this.notesToPlay.has(key.note)) {
+          key.colour = 155;
           key.oscillator.triggerAttack(key.note);
         }
       });
@@ -14675,6 +14676,7 @@ class Piano {
   releaseNotes() {
     if (this.notesToRelease.size > 0) {
       this.keys.forEach((key) => {
+        key.colour = 255;
         if (this.notesToRelease.has(key.note)) {
           key.oscillator.triggerRelease(key.note);
         }
@@ -17197,16 +17199,16 @@ function create_if_block$1(ctx) {
       t1 = space();
       form = element("form");
       div0 = element("div");
-      div0.innerHTML = `<input type="text" id="name" class="name svelte-puxig2" placeholder="Name" value="" required=""/> 
-                <input type="text" id="roomId" class="room-id svelte-puxig2" placeholder="Room ID" value="" required=""/>`;
+      div0.innerHTML = `<input type="text" id="name" class="name svelte-bggjde" placeholder="Name" value="" required=""/> 
+                <input type="text" id="roomId" class="room-id svelte-bggjde" placeholder="Room ID" value="" required=""/>`;
       t3 = space();
       p = element("p");
       p.textContent = "Join Room";
-      attr(h2, "class", "svelte-puxig2");
-      attr(div0, "class", "input-wrapper svelte-puxig2");
-      attr(p, "class", "svelte-puxig2");
-      attr(form, "class", "svelte-puxig2");
-      attr(div1, "class", "join svelte-puxig2");
+      attr(h2, "class", "svelte-bggjde");
+      attr(div0, "class", "input-wrapper svelte-bggjde");
+      attr(p, "class", "svelte-bggjde");
+      attr(form, "class", "svelte-bggjde");
+      attr(div1, "class", "join svelte-bggjde");
     },
     m(target, anchor) {
       insert(target, div1, anchor);
