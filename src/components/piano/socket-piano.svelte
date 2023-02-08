@@ -11,10 +11,9 @@
   
     onMount (() => {
         console.log(document.getElementById("pianoContainer"))
-        let piano = new SocketPiano(name, id, (otherName) => {
-            names.add(otherName)
-            nameElements = [... names]
-            console.log(typeof nameElements)
+        let piano = new SocketPiano(name, id, (otherNames) => {
+            nameElements = [... otherNames.json()]
+            console.log(nameElements)
             
         });
        // console.log(piano)
@@ -33,7 +32,9 @@
         <div class="names">
             <h2>Making Music With:</h2>
             <ul>
-            
+                {#each nameElements as name}
+                    <li>{name}</li>
+                {/each}
             </ul>
         </div>
     </div>
@@ -41,6 +42,9 @@
 
 
 <style>
+    ul {
+        list-style: none;
+    }
     div {
         text-align: center;
     }

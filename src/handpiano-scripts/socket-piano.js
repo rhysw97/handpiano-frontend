@@ -20,9 +20,9 @@ export class SocketPiano extends Piano {
     }
 
     onMessage() {
-      this.io.on("message", data => {
-        console.log(data)
-        this.callback(data)
+      this.io.on(this.id, name=> {
+        console.log(`${name}`)
+        this.callback(name)
       } )
     }
     //adds synths to other synths array to be triggered by other clients using the socket piano
