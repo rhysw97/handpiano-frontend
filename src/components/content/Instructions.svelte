@@ -10,6 +10,8 @@
         <p>
             There are many planned updates such as having settings to edit the sound of the synth as well as a chat function within rooms and even a more responsive piano for mobile.
         </p>
+
+        <p>Please refresh page if you need to return to this menu</p>
     </article>
 
     <article class="instructions">
