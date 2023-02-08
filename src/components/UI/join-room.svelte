@@ -79,7 +79,6 @@
         border: 1px solid rgb(83, 83, 83);
     }
 
-    
     input {
         width: 50%;
         height: 50px;
