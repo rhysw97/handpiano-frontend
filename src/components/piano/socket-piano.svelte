@@ -3,6 +3,7 @@
     import {SocketPiano} from '../../handpiano-scripts/socket-piano'
     import {pianoSketch} from '../../handpiano-scripts/sketch'
     import { onMount } from 'svelte'
+    import UsersInRoom from '../ui/users-in-room.svelte';
     export let id;
     export let name;
     let names = new Set(name)
@@ -31,20 +32,14 @@
         <div class="p5-container" id="pianoContainer"></div>
         <div class="names">
             <h2>Making Music With:</h2>
-            <ul>
-                {#each nameElements as name}
-                    <li>{name}</li>
-                {/each}
-            </ul>
+            <UsersInRoom names={nameElements}></UsersInRoom>
         </div>
     </div>
 </div>
 
 
 <style>
-    ul {
-        list-style: none;
-    }
+   
     div {
         text-align: center;
     }
